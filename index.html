@@ -14,6 +14,11 @@
             flex-direction: column;
             height: 100vh;
             position: relative;
+            width: 100vw;
+            max-width: 1200px; /* 限制最大宽度为 4:3 比例 */
+            max-height: 900px; /* 限制最大高度为 4:3 比例 */
+            margin: 0 auto; /* 居中显示 */
+            overflow: hidden;
         }
         .header {
             display: flex;
@@ -94,6 +99,19 @@
             padding: 20px;
             border-radius: 15px;
             max-width: 400px;
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+        }
+        .profile-content img {
+            width: 200px;
+            height: auto;
+            border-radius: 10px;
+        }
+        .profile-text {
+            margin-left: 20px;
+            text-align: left;
+            font-size: 16px;
         }
         .close-btn {
             margin-top: 15px;
@@ -145,7 +163,7 @@
 
     <div class="profile-container" id="profile">
         <div class="profile-content">
-            <img src="https://i.ibb.co/1tV0B1x2/D7760-BDA-C13-C-4-BA7-97-EC-4-D143-EC7-B333.jpg" alt="资料照片" style="width:100%;border-radius:10px">
+            <img src="https://i.ibb.co/1tV0B1x2/D7760-BDA-C13-C-4-BA7-97-EC-4-D143-EC7-B333.jpg" alt="资料照片">
             <div class="profile-text">
                 <p>usirono huyu 後之フユ</p>
                 <p>誕生日：1/1</p>
@@ -157,8 +175,8 @@
                 <p>好きな食べ物…辛い物</p>
                 <p>嫌いな食べ物…甘い物全般</p>
             </div>
-            <button class="close-btn" onclick="hideProfile()">閉じる</button>
         </div>
+        <button class="close-btn" onclick="hideProfile()">閉じる</button>
     </div>
 
     <div class="input-container">
