@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>iMessage Chat</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #E5E5EA;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            position: relative;
+        }
+        .header {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            background-color: white;
+            border-bottom: 1px solid #ccc;
+        }
+        .header img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            margin-right: 10px;
+            cursor: pointer;
+        }
+        .chat-container {
+            flex-grow: 1;
+            padding: 10px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+        .message-container {
+            display: flex;
+            margin: 10px 0;
+            max-width: 80%;
+        }
+        .message-container.received {
+            align-self: flex-start; /* 接收消息靠左 */
+            justify-content: flex-start;
+        }
+        .message-container.sent {
+            align-self: flex-end; /* 发送消息靠右 */
+            justify-content: flex-end;
+        }
+        .message {
+            padding: 12px 18px;
+            border-radius: 20px;
+            font-size: 16px;
+            position: relative;
+            max-width: 70%;
+            word-break: break-word;
+        }
+        .sent .message {
+            background-color: #34C759;
+            color: white;
+            border-bottom-right-radius: 5px;
+            margin-left: auto; /* 发送消息右对齐 */
+        }
+        .received .message {
+            background-color: #007AFF;
+            color: white;
+            border-bottom-left-radius: 5px;
+            margin-right: auto; /* 接收消息左对齐 */
+        }
+        .avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            margin: 0 10px;
+        }
+        .received .avatar {
+            order: -1; /* 接收消息头像在左侧 */
+        }
+        .profile-container {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            justify-content: center;
+            align-items: center;
+        }
+        .profile-content {
+            background-color: white;
+            padding: 20px;
+            border-radius: 15px;
+            max-width: 400px;
+        }
+        .close-btn {
+            margin-top: 15px;
+            padding: 8px 20px;
+            background-color: #007AFF;
+            color: white;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+        }
+        .input-container {
+            padding: 15px;
+            background-color: white;
+            border-top: 1px solid #ccc;
+            display: flex;
+            gap: 10px;
+        }
+        #messageInput {
+            flex: 1;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 25px;
+            font-size: 16px;
+        }
+        button {
+            padding: 12px 25px;
+            background-color: #34C759;
+            color: white;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .message-container {
+            animation: fadeIn 0.3s ease;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <img src="https://i.ibb.co/hJFh07tf/88-ACB457-ABD6-4-BC5-A4-B8-59-F627-EA0435.jpg" alt="头像" onclick="showProfile()">
+        <div>殺手兔</div>
+    </div>
+    
+    <div class="chat-container" id="chatContainer"></div>
+
+    <div class="profile-container" id="profile">
+        <div class="profile-content">
+            <img src="https://i.ibb.co/1tV0B1x2/D7760-BDA-C13-C-4-BA7-97-EC-4-D143-EC7-B333.jpg" alt="资料照片" style="width:100%;border-radius:10px">
+            <div class="profile-text">
+                <p>usirono huyu 後之フユ</p>
+                <p>誕生日：1/1</p>
+                <p>年齢：24</p>
+                <p>身長：181</p>
+                <p>体重：63</p>
+                <p>好きな物…妹、(以前の)前野</p>
+                <p>嫌いな物…父親、後之家、ZENO</p>
+                <p>好きな食べ物…辛い物</p>
+                <p>嫌いな食べ物…甘い物全般</p>
+            </div>
+            <button class="close-btn" onclick="hideProfile()">閉じる</button>
+        </div>
+    </div>
+
+    <div class="input-container">
+        <input type="text" id="messageInput" placeholder="メッセージを入力...">
+        <button onclick="sendMessage()">送信</button>
+    </div>
+
+    <script>
+        let messages = [
+            { type: 'sent', text: '你好' },
+            { type: 'received', text: '你好' },
+            { type: 'sent', text: '今晚行动吗？' },
+            { type: 'received', text: '老地方见' }
+        ];
+        let index = 0;
+
+        function showProfile() {
+            document.getElementById('profile').style.display = 'flex';
+        }
+
+        function hideProfile() {
+            document.getElementById('profile').style.display = 'none';
+        }
+
+        function createMessageElement(messageData) {
+            const container = document.createElement('div');
+            container.className = `message-container ${messageData.type}`;
+
+            // 接收消息显示头像
+            if (messageData.type === 'received') {
+                const avatar = document.createElement('img');
+                avatar.className = 'avatar';
+                avatar.src = 'https://i.ibb.co/hJFh07tf/88-ACB457-ABD6-4-BC5-A4-B8-59-F627-EA0435.jpg';
+                avatar.onclick = showProfile;
+                container.appendChild(avatar);
+            }
+
+            const messageBubble = document.createElement('div');
+            messageBubble.className = `message ${messageData.type}`;
+            messageBubble.textContent = messageData.text;
+
+            container.appendChild(messageBubble);
+            return container;
+        }
+
+        function sendMessage() {
+            if (index < messages.length) {
+                const chatContainer = document.getElementById('chatContainer');
+                const newMessage = createMessageElement(messages[index]);
+                chatContainer.appendChild(newMessage);
+                index++;
+                
+                // 自动滚动到底部
+                chatContainer.scrollTop = chatContainer.scrollHeight;
+            }
+        }
+
+        // 回车发送功能
+        document.getElementById('messageInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+    </script>
+</body>
+</html>
