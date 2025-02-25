@@ -14,6 +14,12 @@
             flex-direction: column;
             height: 100vh;
             position: relative;
+            width: 100vw;
+            max-width: 1200px; /* 限制最大宽度为 4:3 比例 */
+            max-height: 900px; /* 限制最大高度为 4:3 比例 */
+            margin: 0 auto; /* 居中显示 */
+            overflow: hidden;
+            cursor: pointer; /* 鼠标点击样式 */
         }
         .header {
             display: flex;
@@ -94,6 +100,19 @@
             padding: 20px;
             border-radius: 15px;
             max-width: 400px;
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+        }
+        .profile-content img {
+            width: 200px;
+            height: auto;
+            border-radius: 10px;
+        }
+        .profile-text {
+            margin-left: 20px;
+            text-align: left;
+            font-size: 16px;
         }
         .close-btn {
             margin-top: 15px;
@@ -133,6 +152,32 @@
         .message-container {
             animation: fadeIn 0.3s ease;
         }
+        .affinity-bar {
+            position: fixed;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 20px;
+            height: 200px;
+            background-color: #ccc;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        .affinity-progress {
+            width: 100%;
+            height: 50%;
+            background-color: #FF69B4; /* 粉红色 */
+            transition: height 0.3s;
+        }
+        .affinity-value {
+            position: absolute;
+            right: 30px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 20px;
+            color: #FF69B4; /* 粉红色 */
+            font-weight: bold;
+        }
     </style>
 </head>
 <body>
@@ -145,7 +190,7 @@
 
     <div class="profile-container" id="profile">
         <div class="profile-content">
-            <img src="https://i.ibb.co/1tV0B1x2/D7760-BDA-C13-C-4-BA7-97-EC-4-D143-EC7-B333.jpg" alt="资料照片" style="width:100%;border-radius:10px">
+            <img src="https://i.ibb.co/1tV0B1x2/D7760-BDA-C13-C-4-BA7-97-EC-4-D143-EC7-B333.jpg" alt="资料照片">
             <div class="profile-text">
                 <p>usirono huyu 後之フユ</p>
                 <p>誕生日：1/1</p>
@@ -157,14 +202,15 @@
                 <p>好きな食べ物…辛い物</p>
                 <p>嫌いな食べ物…甘い物全般</p>
             </div>
-            <button class="close-btn" onclick="hideProfile()">閉じる</button>
         </div>
+        <button class="close-btn" onclick="hideProfile()">閉じる</button>
     </div>
 
-    <div class="input-container">
-        <input type="text" id="messageInput" placeholder="メッセージを入力...">
-        <button onclick="sendMessage()">送信</button>
+    <!-- 好感栏系统 -->
+    <div class="affinity-bar">
+        <div class="affinity-progress" id="affinityProgress"></div>
     </div>
+    <div class="affinity-value" id="affinityValue">-100</div>
 
     <script>
         let messages = [
@@ -174,15 +220,19 @@
             { type: 'received', text: '老地方见' }
         ];
         let index = 0;
+        let affinity = -100; // 初始好感值
 
+        // 显示资料弹窗
         function showProfile() {
             document.getElementById('profile').style.display = 'flex';
         }
 
+        // 隐藏资料弹窗
         function hideProfile() {
             document.getElementById('profile').style.display = 'none';
         }
 
+        // 创建消息元素
         function createMessageElement(messageData) {
             const container = document.createElement('div');
             container.className = `message-container ${messageData.type}`;
@@ -204,6 +254,17 @@
             return container;
         }
 
+        // 更新好感栏
+        function updateAffinity() {
+            const progress = document.getElementById('affinityProgress');
+            const value = document.getElementById('affinityValue');
+            affinity += 10; // 每次点击增加10点好感
+            if (affinity > 100) affinity = 100; // 上限100
+            progress.style.height = `${(affinity + 100) / 2}%`; // 计算进度条高度
+            value.textContent = affinity; // 更新好感值显示
+        }
+
+        // 发送消息
         function sendMessage() {
             if (index < messages.length) {
                 const chatContainer = document.getElementById('chatContainer');
@@ -213,14 +274,15 @@
                 
                 // 自动滚动到底部
                 chatContainer.scrollTop = chatContainer.scrollHeight;
+
+                // 更新好感栏
+                updateAffinity();
             }
         }
 
-        // 回车发送功能
-        document.getElementById('messageInput').addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                sendMessage();
-            }
+        // 点击屏幕发送消息
+        document.body.addEventListener('click', () => {
+            sendMessage();
         });
     </script>
 </body>
